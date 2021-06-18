@@ -1,5 +1,6 @@
-package com.hungryshark.notes;
+package com.hungryshark.notes.UI;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -15,13 +16,18 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.hungryshark.notes.Note;
+import com.hungryshark.notes.R;
 
 public class NotesFragment extends Fragment {
 
     public static final String CURRENT_NOTE = "CurrentNote";
-    boolean isLandscape;
     private Note currentNote;
+    private boolean isLandscape;
 
     public NotesFragment() {
         // Required empty public constructor
@@ -39,33 +45,42 @@ public class NotesFragment extends Fragment {
         initList(view);
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private void initList(View view) {
-        LinearLayout layoutView = (LinearLayout) view;
-
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view_lines);
         String[] notes = getResources().getStringArray(R.array.notes);
+        SocialNetworkAdapter myAdapter = new SocialNetworkAdapter(notes);
+        recyclerView.setAdapter(myAdapter);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
 
-        for (int i = 0; i < notes.length; i++) {
-            String note = notes[i];
+        LinearLayout layoutView = (LinearLayout) view;
+        for (String note : notes) {
             TextView title = new TextView(getContext());
             title.setText(note);
-            title.setTextSize(30);
             layoutView.addView(title);
-            final int fi = i;
-            title.setOnClickListener(v -> {
-                currentNote = new Note(getResources().getStringArray(R.array.notes)[fi],
-                        getResources().getStringArray(R.array.date)[fi]);
+            myAdapter.SetOnItemClickListener((view1, position) -> {
+
+                currentNote = new Note(getResources().getStringArray(R.array.notes)[position],
+                        getResources().getStringArray(R.array.date)[position]);
                 showNotes(currentNote);
+
             });
-            title.setOnLongClickListener(v -> {
+            myAdapter.setMyLongClickListener((view12, position) -> {
                 Activity activity = requireActivity();
-                PopupMenu popupMenu = new PopupMenu(activity, v);
+                PopupMenu popupMenu = new PopupMenu(activity, view12);
                 activity.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());
                 popupMenu.show();
-                return false;
             });
-
         }
+
+        DividerItemDecoration itemDecoration = new
+                DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL);
+        itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator,
+                null));
+        recyclerView.addItemDecoration(itemDecoration);
     }
+
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
@@ -84,21 +99,20 @@ public class NotesFragment extends Fragment {
             currentNote = new Note(getResources().getStringArray(R.array.notes)[0],
                     getResources().getStringArray(R.array.date)[0]);
         }
-
         if (isLandscape) {
             showLandNotes(currentNote);
         }
     }
 
-    private void showNotes(Note note) {
+    private void showNotes(Note currentNote) {
         if (isLandscape) {
-            showLandNotes(note);
+            showLandNotes(currentNote);
         } else {
-            showPortNotes(note);
+            showPortNotes(currentNote);
         }
     }
 
-    private void showPortNotes(Note note) {
+    private void showPortNotes(Note currentNote) {
         NoteFragment details = NoteFragment.newInstance(currentNote);
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -107,8 +121,8 @@ public class NotesFragment extends Fragment {
                 .commitAllowingStateLoss();
     }
 
-    private void showLandNotes(Note note) {
-        NoteFragment detail = NoteFragment.newInstance(note);
+    private void showLandNotes(Note currentNote) {
+        NoteFragment detail = NoteFragment.newInstance(currentNote);
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentManager.popBackStack();

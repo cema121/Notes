@@ -1,4 +1,4 @@
-package com.hungryshark.notes;
+package com.hungryshark.notes.UI;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,6 +8,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.hungryshark.notes.Note;
+import com.hungryshark.notes.R;
 
 
 public class NoteFragment extends Fragment {

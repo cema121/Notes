@@ -1,6 +1,6 @@
 package com.hungryshark.notes;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,8 +11,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -56,6 +56,14 @@ public class NotesFragment extends Fragment {
                         getResources().getStringArray(R.array.date)[fi]);
                 showNotes(currentNote);
             });
+            title.setOnLongClickListener(v -> {
+                Activity activity = requireActivity();
+                PopupMenu popupMenu = new PopupMenu(activity, v);
+                activity.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());
+                popupMenu.show();
+                return false;
+            });
+
         }
     }
 
@@ -91,21 +99,21 @@ public class NotesFragment extends Fragment {
     }
 
     private void showPortNotes(Note note) {
-        Intent intent = new Intent();
-        intent.setClass(getActivity(), NoteActivity.class);
-        intent.putExtra(NoteFragment.ARG_NOTE, note);
-        startActivity(intent);
+        NoteFragment details = NoteFragment.newInstance(currentNote);
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.note_container, details)
+                .addToBackStack(null)
+                .commitAllowingStateLoss();
     }
 
     private void showLandNotes(Note note) {
         NoteFragment detail = NoteFragment.newInstance(note);
-        FragmentActivity context = getActivity();
-        if (context != null) {
-            FragmentManager fragmentManager = context.getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.note_container_land, detail);
-            fragmentTransaction.commit();
-        }
-
+        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentManager.popBackStack();
+        fragmentTransaction.replace(R.id.note_container_land, detail);
+        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        fragmentTransaction.commitAllowingStateLoss();
     }
 }

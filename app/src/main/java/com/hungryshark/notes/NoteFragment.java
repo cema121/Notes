@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -15,6 +14,7 @@ public class NoteFragment extends Fragment {
 
     public static final String ARG_NOTE = "note";
     private Note note;
+    private boolean isLandscape;
 
     public NoteFragment() {
         // Required empty public constructor
@@ -40,6 +40,7 @@ public class NoteFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_note, container, false);
 
     }

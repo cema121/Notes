@@ -5,8 +5,8 @@ import android.os.Parcelable;
 
 public class Note implements Parcelable {
 
-    private String title;
-    private String date;
+    final String title;
+    final String date;
 
     public Note(String title, String date) {
         this.title = title;

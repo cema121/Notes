@@ -16,6 +16,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.hungryshark.notes.UI.NoteFragment;
+import com.hungryshark.notes.UI.NotesFragment;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {

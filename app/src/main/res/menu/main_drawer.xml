@@ -5,7 +5,6 @@
         android:icon = "@android:drawable/ic_menu_preferences"
         android:orderInCategory = "25"
         android:title = "@string/settings" />
-
     <item
         android:id = "@+id/action_favorite"
         android:icon = "@android:drawable/btn_star_big_on"

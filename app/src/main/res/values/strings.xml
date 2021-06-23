@@ -11,9 +11,12 @@
     <string name="item2">item2</string>
     <string name="send">Переслать</string>
     <string name="photo">Фотография</string>
-    <string name="delete">Удалить</string>
     <string name = "navigation_drawer_open" >Open navigation drawer</string >
     <string name = "navigation_drawer_close" >Close navigation drawer</string >
     <string name="info">О приложении</string>
     <string name="avatar">Hungry Shark</string>
+    <string name="update">Изменить</string>
+    <string name="delete">Удалить</string>
+    <string name="clear">clear</string>
+    <string name="change">change</string>
 </resources>

@@ -3,17 +3,17 @@ package com.hungryshark.notes;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class Note implements Parcelable {
+public class CardNote implements Parcelable {
 
     final String title;
     final String date;
 
-    public Note(String title, String date) {
+    public CardNote(String title, String date) {
         this.title = title;
         this.date = date;
     }
 
-    protected Note(Parcel in) {
+    protected CardNote(Parcel in) {
         title = in.readString();
         date = in.readString();
     }
@@ -29,15 +29,15 @@ public class Note implements Parcelable {
         return 0;
     }
 
-    public static final Creator<Note> CREATOR = new Creator<Note>() {
+    public static final Creator<CardNote> CREATOR = new Creator<CardNote>() {
         @Override
-        public Note createFromParcel(Parcel in) {
-            return new Note(in);
+        public CardNote createFromParcel(Parcel in) {
+            return new CardNote(in);
         }
 
         @Override
-        public Note[] newArray(int size) {
-            return new Note[size];
+        public CardNote[] newArray(int size) {
+            return new CardNote[size];
         }
     };
 

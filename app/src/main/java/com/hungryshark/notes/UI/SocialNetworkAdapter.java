@@ -1,23 +1,34 @@
 package com.hungryshark.notes.UI;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.hungryshark.notes.CardNote;
 import com.hungryshark.notes.R;
+import com.hungryshark.notes.data.CardsSource;
 
 public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdapter.MyViewHolder> {
 
-    private final String[] dataSource;
+    private final CardsSource dataSource;
+    private final Fragment fragment;
     private MyClickListener myClickListener;
     private MyLongClickListener myLongClickListener;
+    private int menuPosition;
 
-    public SocialNetworkAdapter(String[] dataSource) {
+    public SocialNetworkAdapter(CardsSource dataSource, Fragment fragment) {
         this.dataSource = dataSource;
+        this.fragment = fragment;
+    }
+
+    public int getMenuPosition() {
+        return menuPosition;
     }
 
     public void SetOnItemClickListener(MyClickListener myClickListener) {
@@ -37,12 +48,12 @@ public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdap
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        holder.onBind(dataSource[position]);
+        holder.onBind(dataSource.getCardNote(position));
     }
 
     @Override
     public int getItemCount() {
-        return dataSource.length;
+        return dataSource.size();
     }
 
     public interface MyClickListener {
@@ -56,26 +67,39 @@ public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdap
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView textView;
+        private final TextView date;
 
+        @SuppressLint("NewApi")
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.textView);
-            textView.setOnClickListener(v -> {
+            date = itemView.findViewById(R.id.date);
+            registerContextMenu(itemView);
+            itemView.setOnClickListener(v -> {
                 if (myClickListener != null) {
                     myClickListener.onItemClick(v, getAdapterPosition());
                 }
             });
-            textView.setOnLongClickListener(v -> {
-                if (myLongClickListener != null) {
-                    myLongClickListener.onLongItemClick(v, getAdapterPosition());
-                }
-
-                return false;
+            itemView.setOnLongClickListener(v -> {
+                menuPosition = getLayoutPosition();
+                itemView.showContextMenu(10, 10);
+                return true;
             });
         }
 
-        public void onBind(String s) {
-            textView.setText(s);
+        public void onBind(CardNote cardNote) {
+            textView.setText(cardNote.getTitle());
+            date.setText(cardNote.getDate());
+        }
+
+        private void registerContextMenu(@NonNull View itemView) {
+            if (fragment != null) {
+                itemView.setOnLongClickListener(v -> {
+                    menuPosition = getLayoutPosition();
+                    return false;
+                });
+                fragment.registerForContextMenu(itemView);
+            }
         }
     }
 }

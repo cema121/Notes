@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="notes">
+    <string-array name="titles">
         <item>Note 1</item>
         <item>Note 2</item>
         <item>Note 3</item>
@@ -10,4 +10,11 @@
         <item>Date 2</item>
         <item>Date 3</item>
     </string-array>
+    <string-array name="descriptions">
+        <item>Descriptions 1</item>
+        <item>Descriptions 2</item>
+        <item>Descriptions 3</item>
+    </string-array>
+    <string-array name="color" />
+    <string-array name="pictures" />
 </resources>

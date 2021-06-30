@@ -2,7 +2,7 @@
     <string name="app_name">Записная книжка</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="settings">Настройки</string>
-    <string name="main">main</string>
+    <string name="main">Main</string>
     <string name="favorite">Избранное</string>
     <string name="search">Поиск</string>
     <string name="add">Добавить</string>
@@ -11,12 +11,15 @@
     <string name="item2">item2</string>
     <string name="send">Переслать</string>
     <string name="photo">Фотография</string>
-    <string name = "navigation_drawer_open" >Open navigation drawer</string >
-    <string name = "navigation_drawer_close" >Close navigation drawer</string >
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="info">О приложении</string>
     <string name="avatar">Hungry Shark</string>
+    <string name="mail">e-mail</string>
+    <string name="clear">Очистить</string>
     <string name="update">Изменить</string>
     <string name="delete">Удалить</string>
-    <string name="clear">clear</string>
-    <string name="change">change</string>
+    <string name="car">Машина</string>
+    <string name="plane">самолет</string>
+    <string name="train">поезд</string>
 </resources>

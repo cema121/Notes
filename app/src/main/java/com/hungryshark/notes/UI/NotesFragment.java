@@ -1,7 +1,7 @@
 package com.hungryshark.notes.UI;
 
 import android.annotation.SuppressLint;
-import android.content.res.Configuration;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -14,175 +14,140 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.hungryshark.notes.CardNote;
+import com.hungryshark.notes.MainActivity;
+import com.hungryshark.notes.Navigation;
+import com.hungryshark.notes.Publisher;
 import com.hungryshark.notes.R;
-import com.hungryshark.notes.data.CardsCardsSourceImpl;
 import com.hungryshark.notes.data.CardsSource;
+import com.hungryshark.notes.data.CardsSourceFirebaseImpl;
 
 public class NotesFragment extends Fragment {
 
-    public static final String CURRENT_NOTE = "CurrentNote";
-    SocialNetworkAdapter myAdapter;
-    RecyclerView recyclerView;
-    private CardNote cardNote;
+    private static final int MY_DEFAULT_DURATION = 1000;
     private CardsSource data;
-    private boolean isLandscape;
+    private SocialNetworkAdapter adapter;
+    private RecyclerView recyclerView;
+    private Navigation navigation;
+    private Publisher publisher;
+    private boolean moveToFirstPosition;
 
-    public NotesFragment() {
-        // Required empty public constructor
+    public static NotesFragment newInstance() {
+        return new NotesFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_notes, container, false);
+        View view = inflater.inflate(R.layout.fragment_notes, container, false);
+        initView(view);
+        setHasOptionsMenu(true);
+        data = new CardsSourceFirebaseImpl().init(cardsData -> adapter.notifyDataSetChanged());
+        adapter.setDataSource(data);
+        return view;
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        setHasOptionsMenu(true);
-        initList(view);
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        navigation = activity.getNavigation();
+        publisher = activity.getPublisher();
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private void initList(View view) {
-        recyclerView = view.findViewById(R.id.recycler_view_lines);
-        data = new CardsCardsSourceImpl(getResources()).init();
-        myAdapter = new SocialNetworkAdapter(data, this);
-        recyclerView.setAdapter(myAdapter);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
-
-        myAdapter.SetOnItemClickListener((view1, position) -> {
-            cardNote = data.getCardNote(position);
-            showNotes(cardNote);
-        });
-
-        if (getContext() != null) {
-            DividerItemDecoration itemDecoration = new
-                    DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL);
-            itemDecoration.setDrawable(getResources().getDrawable(R.drawable.separator, null));
-            recyclerView.addItemDecoration(itemDecoration);
-        }
+    @Override
+    public void onDetach() {
+        navigation = null;
+        publisher = null;
+        super.onDetach();
     }
 
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.main_notes, menu);
-        isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-        MenuItem search = menu.findItem(R.id.action_search);
-        SearchView searchText = (SearchView) search.getActionView();
-        searchText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                Toast.makeText(getContext(), query,
-                        Toast.LENGTH_SHORT).show();
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return true;
-            }
-        });
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add:
-                data.addData(new CardNote("Запись" + (data.size() + 1), "Дата" + (data.size() + 1)));
-                myAdapter.notifyItemInserted(data.size() - 1);
-                recyclerView.scrollToPosition(data.size() - 1);
-                myAdapter.notifyItemInserted(data.size() - 1);
-                recyclerView.scrollToPosition(data.size() - 1);
-                return true;
-            case R.id.action_delete:
-                return true;
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        return onItemSelected(item.getItemId()) || super.onOptionsItemSelected(item);
+    }
+
+    private void initView(View view) {
+        recyclerView = view.findViewById(R.id.recycler_view_lines);
+        initRecyclerView();
+    }
+
+    @SuppressLint("DefaultLocale")
+    private void initRecyclerView() {
+        recyclerView.setHasFixedSize(true);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+
+        adapter = new SocialNetworkAdapter(this);
+        recyclerView.setAdapter(adapter);
+
+        DefaultItemAnimator animator = new DefaultItemAnimator();
+        animator.setAddDuration(MY_DEFAULT_DURATION);
+        animator.setRemoveDuration(MY_DEFAULT_DURATION);
+        recyclerView.setItemAnimator(animator);
+
+
+        if (moveToFirstPosition && data.size() > 0) {
+            recyclerView.scrollToPosition(0);
+            moveToFirstPosition = false;
         }
-        return super.onOptionsItemSelected(item);
+
+        adapter.SetOnItemClickListener((view, position) -> Toast.makeText(getContext(), String.format("Позиция - %d", position), Toast.LENGTH_SHORT).show());
     }
 
     @Override
-    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
+    public void onCreateContextMenu(@NonNull ContextMenu menu, @NonNull View v, @Nullable ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = requireActivity().getMenuInflater();
-        inflater.inflate(R.menu.popup, menu);
+        inflater.inflate(R.menu.main_note, menu);
     }
 
     @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        int position = myAdapter.getMenuPosition();
-        switch (item.getItemId()) {
-            case R.id.change:
+    public boolean onContextItemSelected(@NonNull MenuItem item) {
+
+        return onItemSelected(item.getItemId()) || super.onContextItemSelected(item);
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    private boolean onItemSelected(int menuItemId) {
+        switch (menuItemId) {
+            case R.id.action_add:
+                navigation.addFragment(NoteFragment.newInstance(), true);
+                publisher.subscribe(cardData -> {
+                    data.addCardData(cardData);
+                    adapter.notifyItemInserted(data.size() - 1);
+                    moveToFirstPosition = true;
+                });
                 return true;
-            case R.id.delete:
-                data.deleteData(position);
-                myAdapter.notifyItemRemoved(position);
+            case R.id.action_update:
+                final int updatePosition = adapter.getMenuPosition();
+                navigation.addFragment(NoteFragment.newInstance(data.getCardData(updatePosition)), true);
+                publisher.subscribe(cardData -> {
+                    data.updateCardData(updatePosition, cardData);
+                    adapter.notifyItemChanged(updatePosition);
+                });
                 return true;
-            case R.id.clear:
-                data.clearData();
-                myAdapter.notifyDataSetChanged();
+            case R.id.action_delete:
+                int deletePosition = adapter.getMenuPosition();
+                data.deleteCardData(deletePosition);
+                adapter.notifyItemRemoved(deletePosition);
+                return true;
+            case R.id.action_clear:
+                data.clearCardData();
+                adapter.notifyDataSetChanged();
                 return true;
         }
-        return super.onContextItemSelected(item);
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putParcelable(CURRENT_NOTE, cardNote);
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-
-        if (savedInstanceState != null) {
-            cardNote = savedInstanceState.getParcelable(CURRENT_NOTE);
-        } else {
-            cardNote = new CardNote(getResources().getStringArray(R.array.notes)[0],
-                    getResources().getStringArray(R.array.date)[0]);
-        }
-        if (isLandscape) {
-            showLandNotes(cardNote);
-        }
-    }
-
-    private void showNotes(CardNote cardNote) {
-        if (isLandscape) {
-            showLandNotes(cardNote);
-        } else {
-            showPortNotes(cardNote);
-        }
-    }
-
-    private void showPortNotes(CardNote cardNote) {
-        NoteFragment details = NoteFragment.newInstance(cardNote);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.note_container, details)
-                .addToBackStack(null)
-                .commitAllowingStateLoss();
-    }
-
-    private void showLandNotes(CardNote cardNote) {
-        NoteFragment detail = NoteFragment.newInstance(cardNote);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.note_container_land, detail);
-        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-        fragmentTransaction.commitAllowingStateLoss();
+        return false;
     }
 }

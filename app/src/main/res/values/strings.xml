@@ -22,4 +22,7 @@
     <string name="car">Машина</string>
     <string name="plane">самолет</string>
     <string name="train">поезд</string>
+    <string name="exclamation">Вы уверены что хотите удалить?</string>
+    <string name="press_button">Нажмите ДА</string>
+    <string name="buttonYes">ДА</string>
 </resources>

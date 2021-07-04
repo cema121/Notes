@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id = "@+id/action_settings"
-        android:icon = "@android:drawable/ic_menu_preferences"
-        android:orderInCategory = "25"
-        android:title = "@string/settings" />
-    <item
-        android:id = "@+id/action_favorite"
-        android:icon = "@android:drawable/btn_star_big_on"
-        android:orderInCategory = "20"
-        android:title = "@string/favorite" />
-    <item
-        android:id = "@+id/info"
-        android:icon = "@android:drawable/btn_star_big_on"
-        android:orderInCategory = "30"
-        android:title = "@string/info" />
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_notes"
+            android:icon="@drawable/car"
+            android:title="@string/car" />
+        <item
+            android:id="@+id/nav_car"
+            android:icon="@drawable/plane"
+            android:title="@string/plane" />
+        <item
+            android:id="@+id/nav_health"
+            android:icon="@drawable/train"
+            android:title="@string/train" />
+    </group>
 </menu>

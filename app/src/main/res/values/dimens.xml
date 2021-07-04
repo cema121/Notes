@@ -9,4 +9,7 @@
     <dimen name="nav_header_dimen">22sp</dimen>
     <dimen name="sizeItemList">30sp</dimen>
     <dimen name="padding_item_view">10dp</dimen>
+    <dimen name="heightImage">200dp</dimen>
+    <dimen name="textTitle">42sp</dimen>
+    <dimen name="textDescription">20sp</dimen>
 </resources>

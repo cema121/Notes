@@ -1,54 +1,59 @@
 package com.hungryshark.notes.UI;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.hungryshark.notes.CardNote;
 import com.hungryshark.notes.R;
+import com.hungryshark.notes.data.CardNote;
 import com.hungryshark.notes.data.CardsSource;
+
+import java.text.SimpleDateFormat;
 
 public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdapter.MyViewHolder> {
 
-    private final CardsSource dataSource;
+    private final static String TAG = "SocialNetworkAdapter";
     private final Fragment fragment;
+    private CardsSource dataSource;
     private MyClickListener myClickListener;
-    private MyLongClickListener myLongClickListener;
     private int menuPosition;
 
-    public SocialNetworkAdapter(CardsSource dataSource, Fragment fragment) {
-        this.dataSource = dataSource;
+    public SocialNetworkAdapter(Fragment fragment) {
         this.fragment = fragment;
     }
 
-    public int getMenuPosition() {
-        return menuPosition;
+    public void setDataSource(CardsSource dataSource) {
+        this.dataSource = dataSource;
+        notifyDataSetChanged();
     }
 
-    public void SetOnItemClickListener(MyClickListener myClickListener) {
-        this.myClickListener = myClickListener;
-    }
-
-    public void setMyLongClickListener(MyLongClickListener myLongClickListener) {
-        this.myLongClickListener = myLongClickListener;
-    }
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @NonNull
     @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item, parent, false);
+    public SocialNetworkAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+
+        View v = LayoutInflater.from(viewGroup.getContext())
+                .inflate(R.layout.item, viewGroup, false);
+
+        Log.d(TAG, "onCreateViewHolder");
         return new MyViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        holder.onBind(dataSource.getCardNote(position));
+    public void onBindViewHolder(@NonNull SocialNetworkAdapter.MyViewHolder viewHolder, int i) {
+        viewHolder.setData(dataSource.getCardData(i));
+        Log.d(TAG, "onBindViewHolder");
     }
 
     @Override
@@ -56,40 +61,48 @@ public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdap
         return dataSource.size();
     }
 
+    public void SetOnItemClickListener(MyClickListener itemClickListener) {
+        myClickListener = itemClickListener;
+    }
+
+    public int getMenuPosition() {
+        return menuPosition;
+    }
+
     public interface MyClickListener {
         void onItemClick(View view, int position);
     }
 
-    public interface MyLongClickListener {
-        void onLongItemClick(View view, int position);
-    }
-
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
-        private final TextView textView;
-        private final TextView date;
+        private TextView title;
+        private TextView description;
+        private AppCompatImageView image;
+        private CheckBox like;
+        private TextView date;
 
-        @SuppressLint("NewApi")
-        public MyViewHolder(@NonNull View itemView) {
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public MyViewHolder(@NonNull final View itemView) {
+
             super(itemView);
-            textView = itemView.findViewById(R.id.textView);
+            title = itemView.findViewById(R.id.title);
+            description = itemView.findViewById(R.id.description);
+            image = itemView.findViewById(R.id.imageView);
+            like = itemView.findViewById(R.id.like);
             date = itemView.findViewById(R.id.date);
+
             registerContextMenu(itemView);
-            itemView.setOnClickListener(v -> {
+
+            image.setOnClickListener(v -> {
                 if (myClickListener != null) {
                     myClickListener.onItemClick(v, getAdapterPosition());
                 }
             });
-            itemView.setOnLongClickListener(v -> {
+            image.setOnLongClickListener(v -> {
                 menuPosition = getLayoutPosition();
                 itemView.showContextMenu(10, 10);
                 return true;
             });
-        }
-
-        public void onBind(CardNote cardNote) {
-            textView.setText(cardNote.getTitle());
-            date.setText(cardNote.getDate());
         }
 
         private void registerContextMenu(@NonNull View itemView) {
@@ -100,6 +113,15 @@ public class SocialNetworkAdapter extends RecyclerView.Adapter<SocialNetworkAdap
                 });
                 fragment.registerForContextMenu(itemView);
             }
+        }
+
+        @SuppressLint("SimpleDateFormat")
+        public void setData(CardNote cardData) {
+            title.setText(cardData.getTitle());
+            description.setText(cardData.getDescription());
+            like.setChecked(cardData.isLike());
+            image.setImageResource(cardData.getPicture());
+            date.setText(new SimpleDateFormat("dd-MM-yy").format(cardData.getDate()));
         }
     }
 }

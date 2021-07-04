@@ -1,18 +1,19 @@
 package com.hungryshark.notes.data;
 
-import com.hungryshark.notes.CardNote;
-
 public interface CardsSource {
-    CardNote getCardNote(int position);
+    CardsSource init(CardsSourceResponse cardsSourceResponse);
+
+    CardNote getCardData(int position);
 
     int size();
 
-    void deleteData(int position);
+    void deleteCardData(int position);
 
-    void updateData(int position, CardNote cardNote);
+    void updateCardData(int position, CardNote cardData);
 
-    void addData(CardNote cardNote);
+    void addCardData(CardNote cardData);
 
-    void clearData();
+    void clearCardData();
+
 }
 

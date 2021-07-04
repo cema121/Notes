@@ -1,105 +1,141 @@
 package com.hungryshark.notes.UI;
 
-import android.content.res.Configuration;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.DatePicker;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import com.hungryshark.notes.CardNote;
+import com.google.android.material.textfield.TextInputEditText;
+import com.hungryshark.notes.MainActivity;
+import com.hungryshark.notes.Publisher;
 import com.hungryshark.notes.R;
+import com.hungryshark.notes.data.CardNote;
+import com.hungryshark.notes.data.PictureIndexConverter;
 
-import java.util.List;
+import java.util.Calendar;
+import java.util.Date;
 
 
 public class NoteFragment extends Fragment {
 
-    public static final String ARG_NOTE = "note";
-    private CardNote cardNote;
+    private static final String ARG_CARD_DATA = "Param_CardData";
 
-    public NoteFragment() {
-        // Required empty public constructor
-    }
+    private CardNote cardData;
+    private Publisher publisher;
+    private TextInputEditText title;
+    private TextInputEditText description;
+    private DatePicker datePicker;
 
-
-    public static NoteFragment newInstance(CardNote cardNote) {
+    public static NoteFragment newInstance(CardNote cardData) {
         NoteFragment fragment = new NoteFragment();
         Bundle args = new Bundle();
-        args.putParcelable(ARG_NOTE, cardNote);
+        args.putParcelable(ARG_CARD_DATA, cardData);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    public static NoteFragment newInstance() {
+        return new NoteFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            cardNote = getArguments().getParcelable(ARG_NOTE);
+            cardData = getArguments().getParcelable(ARG_CARD_DATA);
         }
-        if (savedInstanceState == null) {
-            setHasOptionsMenu(true);
-        }
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        MainActivity activity = (MainActivity) context;
+        publisher = activity.getPublisher();
+    }
+
+    @Override
+    public void onDetach() {
+        publisher = null;
+        super.onDetach();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_note, container, false);
+        View view = inflater.inflate(R.layout.fragment_note, container, false);
+        initView(view);
+        // если cardData пустая, то это добавление
+        if (cardData != null) {
+            populateView();
+        }
+        return view;
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        TextView textViewTitle = view.findViewById(R.id.title_note);
-        TextView textViewDate = view.findViewById(R.id.date);
-        textViewTitle.setText(cardNote.getTitle());
-        textViewDate.setText((CharSequence) cardNote.getDate());
+    public void onStop() {
+        super.onStop();
+        cardData = collectCardData();
     }
 
+    // Здесь передадим данные в паблишер
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.main_notes, menu);
-
-        boolean isLandscape = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-        FragmentManager fragmentManager = getFragmentManager();
-        if (fragmentManager != null) {
-            Fragment fragment = getVisibleFragment(fragmentManager);
-
-            if (isLandscape && fragment instanceof NoteFragment) {
-                menu.findItem(R.id.action_back).setVisible(false);
-            }
-        }
+    public void onDestroy() {
+        super.onDestroy();
+        publisher.notifySingle(cardData);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.action_back) {
-            FragmentManager fragmentManager = getFragmentManager();
-            if (fragmentManager != null) {
-                fragmentManager.popBackStack();
-            }
-            return true;
+    private CardNote collectCardData() {
+        String title = this.title.getText().toString();
+        String description = this.description.getText().toString();
+        Date date = getDateFromDatePicker();
+
+        if (cardData != null) {
+            CardNote answer;
+            answer = new CardNote(title, description, cardData.getPicture(), cardData.isLike(), date);
+            answer.setId(cardData.getId());
+            return answer;
+        } else {
+
+            int picture = PictureIndexConverter.getPictureByIndex(PictureIndexConverter.randomPictureIndex());
+            return new CardNote(title, description, picture, false, date);
         }
-        return super.onOptionsItemSelected(item);
+
     }
 
-    private Fragment getVisibleFragment(FragmentManager fragmentManager) {
-        List<Fragment> fragments = fragmentManager.getFragments();
-        int countFragments = fragments.size();
-        for (int i = countFragments - 1; i >= 0; i--) {
-            Fragment fragment = fragments.get(i);
-            if (fragment.isVisible())
-                return fragment;
-        }
-        return null;
+    // Получение даты из DatePicker
+    private Date getDateFromDatePicker() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, this.datePicker.getYear());
+        cal.set(Calendar.MONTH, this.datePicker.getMonth());
+        cal.set(Calendar.DAY_OF_MONTH, this.datePicker.getDayOfMonth());
+        return cal.getTime();
+    }
+
+    private void initView(View view) {
+        title = view.findViewById(R.id.inputTitle);
+        description = view.findViewById(R.id.inputDescription);
+        datePicker = view.findViewById(R.id.inputDate);
+    }
+
+    private void populateView() {
+        title.setText(cardData.getTitle());
+        description.setText(cardData.getDescription());
+        initDatePicker(cardData.getDate());
+    }
+
+    // Установка даты в DatePicker
+    private void initDatePicker(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        this.datePicker.init(calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH),
+                null);
+
     }
 }

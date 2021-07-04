@@ -8,12 +8,10 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class CardsSourceFirebaseImpl implements CardsSource {
 
     private static final String CARDS_COLLECTION = "notes";
-    private static final String TAG = "CardsSourceFirebaseImpl";
 
     private FirebaseFirestore store = FirebaseFirestore.getInstance();
     private CollectionReference collection = store.collection(CARDS_COLLECTION);
@@ -25,7 +23,7 @@ public class CardsSourceFirebaseImpl implements CardsSource {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         cardsData = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : Objects.requireNonNull(task.getResult())) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
                             Map<String, Object> doc = document.getData();
                             String id = document.getId();
                             CardNote cardData = CardDataMapping.toCardData(id, doc);

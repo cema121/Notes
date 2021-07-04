@@ -1,7 +1,9 @@
 package com.hungryshark.notes.UI;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -139,9 +141,19 @@ public class NotesFragment extends Fragment {
                 });
                 return true;
             case R.id.action_delete:
-                int deletePosition = adapter.getMenuPosition();
-                data.deleteCardData(deletePosition);
-                adapter.notifyItemRemoved(deletePosition);
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle(R.string.exclamation)
+                        .setMessage(R.string.press_button)
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.buttonYes,
+                                (DialogInterface.OnClickListener) (dialog, id) -> {
+                                    int deletePosition = adapter.getMenuPosition();
+                                    data.deleteCardData(deletePosition);
+                                    adapter.notifyItemRemoved(deletePosition);
+                                });
+                AlertDialog alert = builder.create();
+                alert.show();
                 return true;
             case R.id.action_clear:
                 data.clearCardData();
